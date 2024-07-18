@@ -1,3 +1,4 @@
+import { useState } from "react";
 import "@cloudscape-design/global-styles/index.css"
 import AppBar from "../components/AppBar/AppBar.jsx";
 import FilesAppLayout from "../components/FilesAppLayout/FilesAppLayout.jsx";
@@ -7,7 +8,11 @@ import TableListFiles from "../components/TableListFiles/TableListFiles.jsx";
 import UploadFileCard from "../components/UploadFileCard/UploadFileCard.jsx";
 import SpaceBetween from "@cloudscape-design/components/space-between";
 
+
 export default function Main({signOut,data,level}) {
+
+    const [uploaded, setUploaded] = useState(false);
+    const username = data?.signInDetails?.loginId?.split("@")[0]
 
     return (
         <>
@@ -19,10 +24,19 @@ export default function Main({signOut,data,level}) {
             
             >
                 <SpaceBetween size="2">
-                    {/* <br /> */}
-                    <UploadFileCard level={level}/>
+                    <UploadFileCard 
+                    uploaded={uploaded}
+                    setUploaded={setUploaded}
+                    username={username}  
+                    level={level}
+                    />
                     <br />
-                    <TableListFiles level={level}/>
+                    <TableListFiles 
+                    uploaded={uploaded}
+                    setUploaded={setUploaded}
+                    username={username} 
+                    level={level}
+                    />
                 </SpaceBetween>
             </FilesAppLayout>
 

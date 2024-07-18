@@ -10,6 +10,14 @@
       "StackName": "amplify-documentmanager3-dev-8bcd8",
       "StackId": "arn:aws:cloudformation:us-west-1:308797648038:stack/amplify-documentmanager3-dev-8bcd8/e960ab20-450e-11ef-b834-06b5fe358ed5",
       "AmplifyAppId": "dxja73lnxhs1q"
+    },
+    "categories": {
+      "hosting": {
+        "amplifyhosting": {
+          "appId": "dxja73lnxhs1q",
+          "type": "cicd"
+        }
+      }
     }
   }
 }

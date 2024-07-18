@@ -1,14 +1,15 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
+import { list, remove,getUrl } from 'aws-amplify/storage';
 
 import "@cloudscape-design/global-styles/index.css"
-import {Box, Button, SpaceBetween, Table} from "@cloudscape-design/components"
+import { Box, Button, SpaceBetween, Table } from "@cloudscape-design/components"
 import Header from "@cloudscape-design/components/header";
-// import { Storage } from 'aws-amplify';
+import moment from "moment";
 
 const columnDefinitions = [
     {
         id: 'key',
-        cell: item => item.key,
+        cell: item => item.path.split("/")[2],
         header: 'Filename',
     },
     {
@@ -20,49 +21,57 @@ const columnDefinitions = [
     {
         id: 'lastModified',
         header: 'Last Modified',
-        cell: item => item.lastModified.toString(),
+        cell: item => moment(item.lastModified).format('MMMM Do YYYY, h:mm a'),
     },
 ];
 
 function TableListFiles(props) {
 
-    const [items, setItems] = useState();
+    const [items, setItems] = useState([]);
     const [selectedItems, setSelectedItems] = useState([]);
+    const [loading,setLoading] = useState(true)
 
     const load = async () => {
-        // Storage.list('', {level: props.level})
-        //     .then(
-        //         result => {
-        //             setItems(result.results);
-        //         }
-        //     )
-        //     .catch((err) => console.log(err));
+        props?.setUploaded(false)
+        const result = await list({
+            path: `media/${props?.username}`,
+        });
+        setItems(result?.items)
+
+        if(result?.items.length > 0){
+            
+            setLoading(true)
+        }else{
+            setLoading(false)
+        }
+
     };
 
-    useEffect(() => {
-        load();
-    }, []);
+    const downloadFile = async (filename)=> {
 
-    function downloadFile(filename) {
-        // Storage.get(filename, {
-        //     level: props.level
-        // }).then(
-        //     (result) => {
-        //         openInNewTab(result);
-        //     }
-        // )
+        const linkToStorageFile = await getUrl({
+            path: filename,
+            options: {
+                validateObjectExistence: false,
+                expiresIn: 900 ,
+                useAccelerateEndpoint: true
+            },
+        });
+        openInNewTab(linkToStorageFile.url);
     }
 
-    function deleteFile(filename) {
-        // Storage.remove(filename, { level: props.level }).then(
-        //     (ok) => {
-        //         load().then(
-        //             // alert("File deleted.")
-        //         );
-        //     }
-        // ).catch( (error) => {
-        //     console.log(error);
-        // } );
+    const deleteFile = async (filename)=>  {
+
+        try {
+            const result = await remove({
+                path: filename,
+            });
+            alert(`The file has been successfully deleted.`);
+            load()
+
+        } catch (error) {
+            console.log('Error ', error);
+        }
     }
 
     const openInNewTab = (url) => {
@@ -70,22 +79,26 @@ function TableListFiles(props) {
         if (newWindow) newWindow.opener = null
     }
 
+    useEffect(() => {
+        load();
+    }, []);
+
     return (
         <Table
-        className="container-style"
+            className="container-style"
             items={items}
             // resizableColumns
             columnDefinitions={columnDefinitions}
-            onSelectionChange={({detail}) =>
+            onSelectionChange={({ detail }) =>
                 setSelectedItems(detail.selectedItems)
             }
             header={
                 <Header
                     actions={
                         <SpaceBetween size="xs" direction="horizontal">
-                            <Button onClick={ () => load() }>Refresh</Button>
-                            <Button disabled={selectedItems.length == 0} onClick={ () => downloadFile(selectedItems[0].key) }>Download</Button>
-                            <Button disabled={selectedItems.length == 0} onClick={ () => deleteFile(selectedItems[0].key) }>Delete</Button>
+                            <Button onClick={() => load()}>Refresh</Button>
+                            <Button disabled={selectedItems.length == 0} onClick={() => downloadFile(selectedItems[0].path)}>Download</Button>
+                            <Button disabled={selectedItems.length == 0} onClick={() => deleteFile(selectedItems[0].path)}>Delete</Button>
                         </SpaceBetween>
                     }
                 >
@@ -95,14 +108,17 @@ function TableListFiles(props) {
             selectionType="single"
             selectedItems={selectedItems}
             empty={
-                <Box margin={{vertical: 'xs'}} textAlign="center" color="inherit">
+                <Box margin={{ vertical: 'xs' }} textAlign="center" color="inherit">
                     <SpaceBetween size="xxs">
-                        <div>
+                        {
+                            loading ? "Loading...": <div>
                             <b>No files uploaded yet</b>
                             <Box variant="p" color="inherit">
                                 You don't have any files uploaded yet.
                             </Box>
                         </div>
+                        }
+                       
                     </SpaceBetween>
                 </Box>
             }
