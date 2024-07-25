@@ -8,8 +8,7 @@ import '@aws-amplify/ui-react/styles.css';
 Amplify.configure(outputs);
 
 function App() {
-  // const user = {}
-  // const signOut = ()=>{}
+
   return (
     <Authenticator>
       {({ signOut, user }) => (

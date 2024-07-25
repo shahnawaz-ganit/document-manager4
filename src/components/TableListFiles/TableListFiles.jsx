@@ -13,6 +13,11 @@ const columnDefinitions = [
         header: 'Filename',
     },
     {
+        id: 'path',
+        cell: item => item.path,
+        header: 'Path',
+    },
+    {
         id: 'size',
         header: 'Size',
         cell: item => (item.size / 1024 / 1024).toFixed(2) + " MB",
